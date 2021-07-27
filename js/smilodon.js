@@ -2,7 +2,7 @@ smilodonArray = []
 
 axios.request({
   method: "GET",
-  url: "http://127.0.0.1:5000/api/iceage?iceageId=2"
+  url: "http://tarpitpark.ml/api/iceage?iceageId=2"
 }).then(function(response) {smilodonArray = response.data
 console.log(smilodonArray.name);
 document.getElementById("smilodon_title").textContent += smilodonArray.name;

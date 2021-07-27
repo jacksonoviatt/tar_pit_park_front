@@ -2,7 +2,7 @@ slothArray = []
 
 axios.request({
   method: "GET",
-  url: "http://127.0.0.1:5000/api/iceage?iceageId=3"
+  url: "http://tarpitpark.ml/iceage?iceageId=3"
 }).then(function(response) {slothArray = response.data
 console.log(slothArray.name);
 document.getElementById("sloth_title").textContent += slothArray.name;

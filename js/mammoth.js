@@ -2,7 +2,7 @@ mammothArray = []
 
 axios.request({
   method: "GET",
-  url: "http://127.0.0.1:5000/api/iceage?iceageId=1"
+  url: "http://tarpitpark.ml/api/iceage?iceageId=1"
 }).then(function(response) {mammothArray = response.data
 console.log(mammothArray.name);
 document.getElementById("mammoth_title").textContent += mammothArray.name;
