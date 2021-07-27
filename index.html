@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Babylon</title>
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Scada&display=swap");
+
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        div {
+            position: absolute;
+        }
+
+        html,
+        body {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+
+        #loadingScreen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+
+
+            text-align: center;
+            background-color: #FFECD1;
+            z-index: 99;
+        }
+
+        .loader {
+            border: 10px solid #FF7D00;
+            
+            border-top: 10px solid #15616D;
+   
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            margin-top: 200px;
+            animation: spin 2s linear infinite;
+        }
+        .loadContainer {
+            width: 100%;
+            display: grid;
+            place-items: center;
+        }
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        #loadingTitle {
+            color: #15616d;
+            font-weight: 300;
+            font-size: 4rem;
+
+            margin-top: 100px;
+        }
+
+        #arrows {
+            margin-top: 40px;
+        }
+
+        #iceageIcons {
+            width: 100%;
+            display: grid;
+            place-items: center;
+            grid-template-columns: 1fr 1fr;
+            position: absolute;
+            column-gap: 200px;
+
+        }
+
+        p {
+            font-size: 1.4rem;
+            margin-top: 20px;
+        }
+
+        p,
+        h2,
+        h1,
+        h3,
+        h4 {
+            font-family: "Scada", sans-serif;
+        }
+    </style>
+    <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
+
+    <script src="https://preview.babylonjs.com/babylon.js"></script>
+    <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+
+
+</head>
+
+<body>
+    <div id="loadingScreen">
+        <h1 id="loadingTitle">Welcome to Tar Pit Park</h1>
+        <p>Use the arrows or your mouse pad to move around!</p>
+        <p>Click on the different animals to learn more.</p>
+        <img src="textures/arrows.png" alt="keyboard arrows" id="arrows">
+        <div class="loadContainer">
+        <div class="loader"></div></div>
+        <div id="iceageIcons"><img src="textures/smilodon.png" alt="a smilodon icon"><img src="textures/mammoth.png"
+                alt="a mammoth icon"></div>
+
+    </div>
+    <canvas id="canvas" touch-action="none"></canvas>
+
+    <script>
+
+        var canvas = document.getElementById('canvas');
+        var engine = new BABYLON.Engine(canvas, true);
+
+
+        var loadingScreenDiv = window.document.getElementById("loadingScreen");
+
+        function customLoadingScreen() {
+            console.log("customLoadingScreen creation")
+        }
+        customLoadingScreen.prototype.displayLoadingUI = function () {
+            console.log("customLoadingScreen loading")
+
+        };
+        customLoadingScreen.prototype.hideLoadingUI = function () {
+            console.log("customLoadingScreen loaded")
+            loadingScreenDiv.style.display = "none";
+        };
+        var loadingScreen = new customLoadingScreen();
+        engine.loadingScreen = loadingScreen;
+
+        engine.displayLoadingUI();
+
+
+        var delayCreateScene = function () {
+            // This creates a basic Babylon Scene object (non-mesh)
+            var scene = new BABYLON.Scene(engine);
+
+            scene.clearColor = new BABYLON.Color3(0.5, 0.8, 0.5);
+            // This creates and positions a free camera (non-mesh)
+            var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 10, 60), scene);
+
+            // This targets the camera to scene origin
+            camera.setTarget(BABYLON.Vector3.Zero());
+
+            // This attaches the camera to the canvas
+            camera.attachControl(canvas, true);
+
+            // This creates a light
+            var light = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 0, 0), scene);
+
+            // raise the light intensity
+            light.intensity = 5;
+            function clickable(asset, path) {
+                asset[0].actionManager = new BABYLON.ActionManager(scene);
+                asset[0].actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+                    window.location = path;
+                }));
+            }
+            function placeForest(forest, x, z, y) {
+
+                moveAsset(forest.pineTrees[0], x, z, y, 1.3);
+                moveAsset(forest.pineTrees[1], x, z, y, 1.3);
+                moveAsset(forest.pineTrees[2], x + 10, z + 5, y, 1.3);
+                moveAsset(forest.pineTrees[3], x - 20, z + 10, y, 1.3);
+                moveAsset(forest.pineTrees[4], x + 10, z - 7, y, 2);
+                moveAsset(forest.pineTrees[5], x - 15, z, y, 1.3);
+
+
+                moveAsset(forest.yellowMush[0], x + 3, z - 7, y, 2);
+                moveAsset(forest.yellowMush[1], x - 13, z, y, 1.3);
+                moveAsset(forest.yellowMush[2], x + 10, z - 17, y, 2);
+                moveAsset(forest.yellowMush[3], x + 10, z - 17, y, 2);
+
+                moveAsset(forest.redMush[0], x - 6, z - 3, y, 4);
+                moveAsset(forest.redMush[1], x - 13, z, y, 1.3);
+                moveAsset(forest.redMush[2], x + 10, z - 17, y, 2);
+                moveAsset(forest.redMush[3], x + 10, z - 17, y, 2);
+
+                moveAsset(forest.lgStones[0], x + 2, z - 7, y, 2);
+                moveAsset(forest.lgStones[1], x + 2, z - 7, y, 2);
+                moveAsset(forest.lgStones[2], x - 5, z, y, 1.3);
+                moveAsset(forest.lgStones[3], x + 4, z - 12, y, 2);
+
+                moveAsset(forest.lgGrass[0], x + 9, z - 14, y, 2);
+                moveAsset(forest.lgGrass[1], x + 3, z - 2, y, 2);
+                moveAsset(forest.lgGrass[2], x - 7, z, y, 1.3);
+                moveAsset(forest.lgGrass[3], x + 10, z - 12, y, 2);
+                moveAsset(forest.lgGrass[4], x + 3, z - 14, y, 2);
+                moveAsset(forest.lgGrass[5], x + 10, z - 7, y, 2);
+                moveAsset(forest.lgGrass[6], x - 5, z + 9, y, 1.3);
+                moveAsset(forest.lgGrass[7], x + 4, z - 1, y, 2);
+
+
+                moveAsset(forest.stump[0], x - 6, z, y, 1);
+                moveAsset(forest.stump[1], x - 10, z + 3, y, 1);
+            }
+
+
+
+
+            function moveAsset(asset, zed, exe, why, rot) {
+                // if(asset === undefined) {
+                //     return
+                // }
+                // setTimeout(function () {
+
+                for (let i = 0; i < asset.length; i++) {
+                    asset[i].position.z = zed
+                    asset[i].position.x = exe
+                    asset[i].position.y = why
+                    asset[i].rotation.y = Math.PI / rot;
+
+                }
+                // }, 2000)
+            }
+            // Import 3D Animal Files
+            let mammoth = BABYLON.SceneLoader.ImportMesh("", "./obj/", "Mammoth.obj", scene, function (newMesh) {
+                mammoth = newMesh
+                clickable(mammoth, "../pages/mammoth.html")
+                // mammoth2 = [newMesh[0].clone(), newMesh[1].clone()]\
+                mammothArray = []
+                for (let i = 0; i < 8; i++) {
+                    mammothArray[i] = [newMesh[0].clone(), newMesh[1].clone()];
+                    clickable(mammothArray[i], "./pages/mammoth.html")
+                    // console.log(mammothArray[i]); 
+
+                }
+                moveAsset(mammoth, -10, -6, -1, 2);
+                for (let i = 0; i < mammoth.length; i++) {
+                    mammoth[i].rotation.x = Math.PI / 0.55;
+                }
+                for (let i = 0; i < mammoth.length; i++) {
+                    mammothArray[5][i].rotation.z = Math.PI / 0.60;
+                }
+                moveAsset(mammothArray[0], -15, -16, 0, 1.5);
+                moveAsset(mammothArray[1], 0, 30, 0, 1);
+                moveAsset(mammothArray[2], -25, -25, 0, 5);
+                moveAsset(mammothArray[3], -35, -17, 0, 2);
+                moveAsset(mammothArray[4], 0, -35, 0, 1.5);
+                moveAsset(mammothArray[5], -16, 28, 0, 1.5);
+                moveAsset(mammothArray[6], 40, -25, 0, .25);
+                moveAsset(mammothArray[7], 40, 0, 0, 5);
+
+            });
+
+
+            sabretooth = BABYLON.SceneLoader.ImportMesh("", "./obj/", "Sabretooth.obj", scene, function (newMesh) {
+                cat = newMesh
+                console.log(newMesh);
+                clickable(cat, "./pages/smilodon.html")
+
+                catArray = []
+                for (let i = 0; i < 7; i++) {
+                    catArray[i] = [newMesh[0].clone(), newMesh[1].clone(), newMesh[2].clone()];
+                    clickable(catArray[i], "./pages/smilodon.html")
+                    // console.log(mammothArray[i]); 
+
+                }
+
+                moveAsset(cat, 0, 30, 3.8, 1);
+                moveAsset(catArray[0], 0, 28, 1, 2);
+                moveAsset(catArray[1], -18, 27, 2.5, 0.6);
+                moveAsset(catArray[2], 0, -90, 1, 0.6);
+                moveAsset(catArray[3], -100, 0, 20, 0.6);
+                moveAsset(catArray[4], -70, 100, 20, 0.3);
+                moveAsset(catArray[5], 40, 20, 0, 0.3);
+                moveAsset(catArray[6], 40, 14, 0, 0.1);
+                for (let i = 0; i < cat.length; i++) {
+                    catArray[0][i].rotation.x = Math.PI / 0.60;
+                }
+
+
+                // setTimeout(function () {
+
+
+
+                // }, 2000);
+            });
+
+            let sloth = BABYLON.SceneLoader.ImportMesh("", "./obj/", "Sloth.obj", scene, function (newMesh) {
+                sloth = newMesh;
+
+
+                clickable(sloth, "./pages/sloth.html")
+                slothArray = [];
+                for (let i = 0; i < 8; i++) {
+                    slothArray[i] = [newMesh[0].clone(), newMesh[1].clone(), newMesh[2].clone(), newMesh[3].clone()];
+                    clickable(slothArray[i], "./pages/sloth.html")
+                }
+                moveAsset(sloth, 92, 20, 1, 3);
+                moveAsset(slothArray[0], 98, 20, 1, 2);
+                moveAsset(slothArray[1], 98, 10, 1, 0.6);
+                moveAsset(slothArray[2], 75, 20, 1, 0.25);
+                moveAsset(slothArray[3], 70, 23, 1, 0.25);
+                moveAsset(slothArray[4], 20, -50, 0, 2);
+                moveAsset(slothArray[5], 10, -60, -0.3, 0.6);
+                moveAsset(slothArray[6], 15, -80, -1, 0.25);
+                moveAsset(slothArray[7], 44, -46, 1, 0.25);
+                for (let i = 0; i < sloth.length; i++) {
+                    slothArray[7][i].rotation.x = Math.PI / 0.550;
+                }
+                // setTimeout(function () {
+
+                // })
+
+            });
+
+            forest = BABYLON.SceneLoader.ImportMesh("", "./obj/", "NatureFreePack1.obj", scene, function (newMesh) {
+                tree = [
+                    newMesh[1],
+                    newMesh[2]
+                ]
+
+                pine = [
+                    newMesh[4],
+                    newMesh[5]
+                ]
+                forests = [];
+                for (let i = 0; i < 23; i++) {
+                    let forest = {}
+                    forest.pineTrees = []
+                    for (let j = 0; j < 6; j++) {
+                        forest.pineTrees.push([newMesh[4].clone(), newMesh[5].clone()])
+
+                    }
+                    forest.lgStones = []
+
+                    for (let j = 0; j < 4; j++) {
+                        forest.lgStones.push([newMesh[9].clone()])
+
+                    }
+                    forest.redMush = []
+                    for (let j = 0; j < 4; j++) {
+                        forest.redMush.push([newMesh[22].clone(), newMesh[23].clone(), newMesh[24].clone()])
+                    }
+                    forest.yellowMush = [];
+                    for (let j = 0; j < 4; j++) {
+                        forest.yellowMush.push([newMesh[11].clone(), newMesh[12].clone()])
+                    }
+                    forest.lgGrass = [];
+                    for (let j = 0; j < 8; j++) {
+                        forest.lgGrass.push([newMesh[14].clone()])
+                    }
+                    forest.stump = [];
+                    for (let i = 0; i < 2; i++) {
+                        forest.stump.push([newMesh[44].clone(), newMesh[45].clone(), newMesh[46].clone(), newMesh[47].clone(), newMesh[48].clone(), newMesh[49].clone(), newMesh[50].clone(), newMesh[51].clone()])
+                    }
+                    forests.push(forest);
+                }
+
+
+
+                pineArray = [];
+                for (let i = 0; i < 55; i++) {
+                    pineArray[i] = [newMesh[4].clone(), newMesh[5].clone()];
+
+                }
+                smallRock = [newMesh[7]];
+
+
+                largeStone = [newMesh[9]];
+                moveAsset(largeStone, 0, 0, -10, 1)
+                yellowMushroom = [
+                    newMesh[11],
+                    newMesh[12]
+                ]
+                moveAsset(yellowMushroom, 10, 10, -10, 1);
+
+
+
+                largeGrass = [newMesh[14]]
+
+                moveAsset(largeGrass, 10, 10, -10, 1);
+
+                smallGrass = [newMesh[16]]
+                moveAsset(smallGrass, 10, 10, -10, 1);
+
+                largeBush = [newMesh[18]]
+                smallBush = [newMesh[20]]
+
+                redMushroom = [
+                    newMesh[22],
+                    newMesh[23],
+                    newMesh[24]
+                ]
+                moveAsset(redMushroom, 10, 10, -10, 1);
+                smallStone = [newMesh[26]]
+                moveAsset(smallStone, 0, 0, -10, 1)
+                largeRock = [newMesh[28]]
+                moveAsset(largeRock, 0, 0, -10, 0.25);
+                moveAsset(smallRock, 45, -48, 1, 0.25);
+
+
+                stick = [
+                    newMesh[30],
+                    newMesh[31],
+                    newMesh[32],
+                    newMesh[33],
+                    newMesh[34],
+                    newMesh[35],
+                    newMesh[36],
+                    newMesh[37],
+                    newMesh[38],
+                    newMesh[39],
+                    newMesh[40],
+                    newMesh[41],
+                    newMesh[42],
+                    newMesh[43]]
+
+                stump = [
+                    newMesh[44],
+                    newMesh[45],
+                    newMesh[46],
+                    newMesh[47],
+                    newMesh[48],
+                    newMesh[49],
+                    newMesh[50],
+                    newMesh[51]]
+                moveAsset(stump, 0, 0, -20, 0)
+
+
+                moveAsset(stick, 0, 0, -20, 0)
+                moveAsset(largeBush, 0, 0, -20, 0)
+                moveAsset(smallBush, 0, 0, -20, 0)
+                moveAsset(tree, 0, 0, -40, 0)
+                moveAsset(pine, 0, 0, -20, 0)
+
+                moveAsset(pineArray[0], 120, 25, 3, 1.2);
+                moveAsset(pineArray[1], 20, 50, 0, 1.2);
+                moveAsset(pineArray[2], -70, 0, 0, 1.2);
+                moveAsset(pineArray[3], -75, 10, 0, 1.2);
+                moveAsset(pineArray[4], -80, 25, 0, 1.2);
+                moveAsset(pineArray[5], -90, -10, 8, 1.2);
+                moveAsset(pineArray[6], -80, -15, 6, 1.2);
+                moveAsset(pineArray[7], -85, 0, 10, 1.2);
+                moveAsset(pineArray[8], -60, -10, 0, 1.2);
+                moveAsset(pineArray[9], -70, -20, 0, 1.2);
+                moveAsset(pineArray[10], -85, 0, 10, 1.2);
+                moveAsset(pineArray[11], -60, 20, 0, 1.2);
+                moveAsset(pineArray[12], -70, 38, 0, 1.2);
+                moveAsset(pineArray[13], -70, 45, 0, 1.2);
+                moveAsset(pineArray[14], -130, 25, 10, 1.2);
+                moveAsset(pineArray[15], -140, -10, 2, 1.2);
+                moveAsset(pineArray[16], -150, -15, 20, 1.2);
+                moveAsset(pineArray[17], -130, 0, 20, 1.2);
+                moveAsset(pineArray[18], -100, -10, 20, 1.2);
+                moveAsset(pineArray[19], -100, -20, 20, 1.2);
+                moveAsset(pineArray[20], -135, -5, 20, 1.2);
+                moveAsset(pineArray[21], -160, 20, 12, 1.2);
+                moveAsset(pineArray[22], -130, 38, 5, 1.2);
+                moveAsset(pineArray[23], -130, 45, 5, 1.2);
+                moveAsset(pineArray[24], -130, -25, 20, 1.2);
+                moveAsset(pineArray[25], -140, 10, 20, 1.2);
+                moveAsset(pineArray[26], -110, 15, 15, 1.2);
+                moveAsset(pineArray[27], -100, -40, 20, 1.2);
+                moveAsset(pineArray[28], -100, -60, 20, 1.2);
+                moveAsset(pineArray[29], -100, 120, 20, 1.2);
+                moveAsset(pineArray[30], -90, 115, 20, 1.2);
+
+                moveAsset(pineArray[31], -160, 120, 20, 1.2);
+                moveAsset(pineArray[32], -130, 138, 20, 1.2);
+                moveAsset(pineArray[33], -130, 145, 20, 1.2);
+                moveAsset(pineArray[34], -110, 135, 20, 1.2);
+                moveAsset(pineArray[35], -140, 110, 20, 1.2);
+                moveAsset(pineArray[36], -130, 115, 20, 1.2);
+                moveAsset(pineArray[37], -100, 140, 20, 1.2);
+                moveAsset(pineArray[38], -100, 160, 20, 1.2);
+                moveAsset(pineArray[39], -100, 120, 20, 1.2);
+                moveAsset(pineArray[40], -140, 145, 20, 1.2);
+
+                moveAsset(pineArray[41], -50, -160, 20, 1.2);
+                moveAsset(pineArray[42], 60, -130, 17, 1.2);
+                moveAsset(pineArray[43], -60, -130, 20, 1.2);
+                moveAsset(pineArray[44], 40, -110, 1, 1.2);
+                moveAsset(pineArray[45], 80, -140, 20, 1.2);
+                moveAsset(pineArray[46], 70, -135, 20, 1.2);
+                moveAsset(pineArray[47], -70, -110, 20, 1.2);
+                moveAsset(pineArray[48], -60, -110, 20, 1.2);
+                moveAsset(pineArray[49], -20, -110, 15, 1.2);
+                moveAsset(pineArray[50], 65, -140, 20, 1.2);
+
+                moveAsset(pineArray[51], -100, -100, 20, 1);
+                moveAsset(pineArray[52], -100, -130, 20, 1.2);
+                moveAsset(pineArray[53], -110, -127, 20, 1.2);
+                moveAsset(pineArray[54], -140, -110, 20, 1.2);
+
+
+                forestxyz = [
+                    [70, -50, 0],
+                    [100, -140, 20],
+                    [100, -170, 20],
+                    [150, -170, 20],
+                    [150, -120, 20],
+                    [120, -80, 20],
+                    [150, -70, 20],
+                    [140, 40, 20],
+                    [150, 60, 20],
+                    [150, 150, 14],
+                    [150, -10, 8],
+                    [0, 150, 20],
+                    [20, 150, 20],
+                    [-40, 130, 20],
+                    [-70, 140, 20],
+                    [40, 120, 20],
+                    [130, 0, 5],
+                    [-50, -50, 0],
+                    [-12, -50, 0],
+                    [-15, -150, 15],
+                    [30, 50, 0],
+                    [60, 50, 0],
+                    [90, -10, 0]]
+
+                for (let i = 0; i < forests.length; i++) {
+
+                    placeForest(forests[i], forestxyz[i][0], forestxyz[i][1], forestxyz[i][2]);
+
+                }
+
+
+
+                // }, 2000)
+
+            });
+
+            // Create the ground 
+            const largeGroundMat = new BABYLON.StandardMaterial("largeGroundMat");
+            largeGroundMat.diffuseTexture = new BABYLON.Texture("textures/ground.png");
+
+            // Add hills and valleys to the map
+            const largeGround = BABYLON.MeshBuilder.CreateGroundFromHeightMap("largeGround", "https://assets.babylonjs.com/environments/villageheightmap.png",
+                { width: 400, height: 400, subdivisions: 20, minHeight: 0, maxHeight: 20 });
+            largeGround.material = largeGroundMat;
+
+            // Lets make sure the player can't go underground
+            camera.upperBetaLimit = Math.PI / 2.2;
+
+            // Create a sky for our scene
+            var skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 500.0 }, scene);
+            var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
+            skyboxMaterial.backFaceCulling = false;
+            skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("skybox/skybox", scene);
+            skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+            skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+            skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+            skybox.material = skyboxMaterial;
+
+            setTimeout(function () {
+                engine.hideLoadingUI();
+            }, 3000)
+            return scene;
+
+
+        };
+        var scene = delayCreateScene();
+        engine.runRenderLoop(function () {
+            if (scene) {
+                scene.render();
+            }
+        });
+        window.addEventListener("resize", function () {
+            engine.resize();
+        });
+
+
+    </script>
+</body>
+
+</html>
+
+<!-- <!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Babylon Template</title> -->
+
+<!-- <style>
+        html,
+        body {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+    </style> -->
+
+<!-- </head> -->
+<!-- 
+<body>
+
+    <canvas id="renderCanvas" touch-action="none"></canvas> <!-- touch-action="none" for best results from PEP -->
+
+
+
+
+<!-- </html> -->
